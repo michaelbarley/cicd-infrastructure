@@ -36,11 +36,23 @@ The repo also has pre-commit hooks for ruff, sqlfluff, and terraform fmt. Betwee
 
 ## Design decisions
 
-**Terraform over Docker Compose.** Docker Compose works fine for local development, and project 1 uses it. But Compose is a standalone tool with its own file format. It doesn't connect to anything else. Terraform brings state management, a plan/apply workflow, and the same language you'd use for cloud infrastructure. The muscle memory of writing `terraform plan` before `terraform apply` carries over to real AWS/GCP work.
+**Terraform over Docker Compose.** Docker Compose is great at managing containers, but containers are all it manages. The moment your project needs something beyond containers (an S3 bucket for raw data, an IAM role for access, a DNS record) you need a separate tool. Terraform manages infrastructure broadly. You declare everything in the same config, and `terraform apply` builds all of it in the right order. One tool, one workflow, one state file.
 
-**Docker provider over a cloud provider.** I wanted this to be runnable on any machine with Docker installed, no cloud accounts or credentials required. The Docker provider gives you real Terraform resources (you can see them in `terraform state list`, reference their attributes, and wire dependencies between them) but everything is local. Swap the provider and tweak the resource types and this could deploy to ECS or Cloud Run.
+For example, if I wanted to land data in S3 instead of local Postgres, I'd add a resource block:
+
+```hcl
+resource "aws_s3_bucket" "weather_data" {
+  bucket = "weather-pipeline-data"
+}
+```
+
+`terraform plan` shows "I'm creating an S3 bucket alongside your containers". `terraform apply` does it. `terraform destroy` tears down the bucket with everything else. No orphaned resources, no manual cleanup.
+
+**Docker provider over a cloud provider.** I wanted this to be runnable on any machine with Docker installed, no cloud accounts or credentials required. The Docker provider gives you real Terraform resources (you can see them in `terraform state list`, reference their attributes, and wire dependencies between them) but everything is local. Swap the Docker provider for the AWS provider, change the resource types, and the same patterns work for real cloud infrastructure. The workflow is identical: plan, review, apply.
 
 **Make over shell scripts.** A Makefile gives you discoverability (`make <tab>` shows every available command) and it's already on every developer's machine. The targets are thin wrappers around Terraform commands, so there's no magic. If you don't want to use Make, you can always run the Terraform commands directly.
+
+**GitHub Actions alongside Terraform.** Terraform handles what gets built. GitHub Actions handles when and how it gets triggered. On a PR, the CI workflow runs `terraform validate` and `terraform fmt -check` so reviewers can see if the config is valid before approving. On merge to main, a separate workflow builds the Docker image and tags it with the git SHA. In a real cloud project, that merge workflow would run `terraform apply` instead, and the infrastructure would update itself. The split is clean: Terraform owns the infrastructure definition, GitHub Actions owns the automation around it.
 
 **Separate CI and build workflows.** The CI workflow runs on pull requests and is fast: linting, tests, config validation. No Docker builds, no deploys. The build workflow runs on merge to main and produces a tagged image. This separation means PRs get feedback in seconds rather than waiting for a full image build.
 
@@ -108,6 +120,8 @@ make down
 
 This runs `terraform destroy`, which removes every container, network, and volume. Nothing is left behind.
 
-## Why bother with IaC for a local project
+## Why Terraform for a local project
 
-Most data engineers can write a pipeline. Fewer can package it so that someone else can clone the repo and have it running in under a minute, with linting, tests, and infrastructure that cleans up after itself. This project is about that gap: the Terraform, the CI, the Makefile, the pre-commit hooks. The stuff that separates a script that works on your machine from a project someone else can actually use.
+The point isn't that Terraform is better than Docker Compose at running containers. Compose does that perfectly well. The point is that real infrastructure is never just containers. It's containers plus a database service plus object storage plus IAM roles plus DNS. Terraform lets you manage all of that with the same tool, the same workflow, and the same config files.
+
+By targeting local Docker here, I get to demonstrate the full Terraform workflow (plan, apply, destroy, state management, variables, outputs, dependency graphs) against infrastructure anyone can run without a cloud account. The patterns are the same whether you're applying against local Docker or a production AWS account.
