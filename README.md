@@ -48,37 +48,6 @@ The repo also has pre-commit hooks for ruff, sqlfluff, and terraform fmt. Betwee
 
 **Unit tests for extraction only.** The extraction script is the only piece of custom logic that runs outside the database. dbt models are tested by dbt, Terraform config is tested by `terraform validate`, and linting catches style issues. The pytest suite focuses on the extraction function: does it parse the API response correctly, does it handle missing data, does it pass the right parameters. No point in testing what the frameworks already test.
 
-## Project layout
-
-```
-├── Makefile                          # make up / down / test / lint
-├── Dockerfile                        # custom Airflow image with dbt
-├── terraform/
-│   ├── main.tf                       # Docker provider, all resources
-│   ├── variables.tf                  # configurable inputs
-│   ├── outputs.tf                    # Airflow URL, psql command
-│   └── terraform.tfvars              # default values
-├── .github/workflows/
-│   ├── ci.yml                        # PR checks: lint + test + validate
-│   └── build.yml                     # merge: Docker build + tag
-├── dags/
-│   └── weather_pipeline.py           # Airflow DAG
-├── extract/
-│   └── open_meteo.py                 # API extraction script
-├── dbt_project/
-│   ├── models/staging/               # deduplication, type casting
-│   ├── models/marts/                 # fact table with city dimensions
-│   └── seeds/dim_cities.csv          # 10 UK cities
-├── scripts/
-│   ├── init-db.sh                    # PostgreSQL schema setup
-│   └── init-airflow.sh               # migrations + admin user
-├── tests/
-│   └── test_open_meteo.py            # 7 unit tests, mocked API
-├── .pre-commit-config.yaml           # ruff, sqlfluff, terraform fmt
-├── .sqlfluff                         # SQL linting rules
-└── pyproject.toml                    # ruff + pytest config
-```
-
 ## Running it
 
 ### Prerequisites
