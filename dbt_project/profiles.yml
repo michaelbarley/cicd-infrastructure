@@ -1,0 +1,12 @@
+weather_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: weather-postgres
+      port: 5432
+      user: airflow
+      password: airflow
+      dbname: warehouse
+      schema: public
+      threads: 2

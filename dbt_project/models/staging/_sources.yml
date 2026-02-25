@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: weather_daily
+        description: Raw daily weather data extracted from Open-Meteo API
+        columns:
+          - name: city
+          - name: latitude
+          - name: longitude
+          - name: date
+          - name: temperature_max
+          - name: temperature_min
+          - name: precipitation
+          - name: wind_speed_max
+          - name: loaded_at

@@ -1,0 +1,20 @@
+name: weather_pipeline
+version: '1.0.0'
+
+profile: weather_pipeline
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+
+clean-targets:
+  - target
+  - dbt_packages
+
+seeds:
+  weather_pipeline:
+    dim_cities:
+      +column_types:
+        latitude: numeric(6,3)
+        longitude: numeric(6,3)

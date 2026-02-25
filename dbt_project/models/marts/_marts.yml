@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: fct_daily_weather
+    description: Daily weather facts per city, joined with city dimensions
+    columns:
+      - name: city
+        tests:
+          - not_null
+      - name: date
+        tests:
+          - not_null
+      - name: region
+        tests:
+          - not_null
+      - name: is_extreme_weather
+        tests:
+          - not_null

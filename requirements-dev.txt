@@ -1,0 +1,5 @@
+pytest
+ruff
+sqlfluff
+requests
+psycopg2-binary

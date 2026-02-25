@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.env
+
+# Terraform
+terraform/.terraform/
+terraform/terraform.tfstate*
+terraform/.terraform.lock.hcl
+
+# dbt
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+dbt_project/.user.yml
+
+# pytest
+.pytest_cache/
